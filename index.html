@@ -53,14 +53,28 @@ body {
 }
 
 /* =========================
-   ZONA CENTRAL
+   ZONA CENTRAL (VERTICAL)
 ========================= */
 .stage {
   width: 100%;
   max-width: 420px;
   display: grid;
-  grid-template-columns: 1fr 280px 1fr;
+  grid-template-rows: auto 280px auto;
+  gap: 16px;
+  justify-items: center;
   align-items: center;
+}
+
+/* =========================
+   TEXTO ARRIBA Y ABAJO
+========================= */
+.lyric {
+  font-size: 16px;
+  line-height: 1.4;
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+  padding: 0 20px;
+  min-height: 40px;
 }
 
 /* =========================
@@ -99,25 +113,6 @@ body {
     inset 0 0 0 1px rgba(255,255,255,0.15),
     0 20px 40px rgba(0,0,0,0.6);
 }
-
-/* =========================
-   LETRAS LATERALES
-========================= */
-.lyric {
-  font-size: 16px;
-  line-height: 1.4;
-  color: rgba(255,255,255,0.85);
-  padding: 0 10px;
-  min-height: 80px;
-}
-
-.lyric.left {
-  text-align: right;
-}
-
-.lyric.right {
-  text-align: left;
-}
 </style>
 </head>
 
@@ -126,8 +121,8 @@ body {
 <div class="app">
   <div class="stage">
 
-    <!-- LETRA IZQUIERDA -->
-    <div class="lyric left" id="lyricLeft"></div>
+    <!-- TEXTO ARRIBA -->
+    <div class="lyric" id="lyricLeft"></div>
 
     <!-- IMAGEN CENTRAL -->
     <div class="carousel">
@@ -148,8 +143,8 @@ body {
       </div>
     </div>
 
-    <!-- LETRA DERECHA -->
-    <div class="lyric right" id="lyricRight"></div>
+    <!-- TEXTO ABAJO -->
+    <div class="lyric" id="lyricRight"></div>
 
   </div>
 </div>
@@ -159,48 +154,33 @@ body {
 </audio>
 
 <script>
-/* =========================
-   CONFIGURACIÓN
-========================= */
 const audio = document.getElementById("audio");
 const carousel = document.getElementById("carousel");
-const lyricLeft = document.getElementById("lyricLeft");
-const lyricRight = document.getElementById("lyricRight");
+const lyricTop = document.getElementById("lyricLeft");
+const lyricBottom = document.getElementById("lyricRight");
 
 const totalImages = 14;
 let slideIndex = 0;
 
-/* =========================
-   LETRAS CON ESCRITURA
-========================= */
 const lyrics = [
-  { time: 8, duration: 4, side: "left", text: "Desde que llegaste tú," },
-  { time: 13, duration: 4, side: "right", text: "todo empezó a cambiar." },
-  { time: 18, duration: 5, side: "left", text: "Cada momento contigo" },
-  { time: 24, duration: 5, side: "right", text: "se volvió especial." }
+  { time: 8, duration: 4, position: "top", text: "Desde que llegaste tú," },
+  { time: 13, duration: 4, position: "bottom", text: "todo empezó a cambiar." },
+  { time: 18, duration: 5, position: "top", text: "Cada momento contigo" },
+  { time: 24, duration: 5, position: "bottom", text: "se volvió especial." }
 ];
 
 let currentLyric = -1;
 
-/* =========================
-   INICIO A LOS 8s
-========================= */
 setTimeout(() => {
   startCarousel();
   startLyrics();
   startAudio();
-}, 8000);
+}, 5000);
 
-/* =========================
-   AUDIO
-========================= */
 function startAudio() {
   audio.play().then(() => audio.muted = false).catch(() => {});
 }
 
-/* =========================
-   CARRUSEL
-========================= */
 function startCarousel() {
   setInterval(() => {
     slideIndex = (slideIndex + 1) % totalImages;
@@ -208,17 +188,10 @@ function startCarousel() {
   }, 5000);
 }
 
-/* =========================
-   LETRAS ESCRIBIÉNDOSE
-========================= */
 function startLyrics() {
   audio.addEventListener("timeupdate", () => {
     const t = audio.currentTime;
-
-    if (
-      currentLyric + 1 < lyrics.length &&
-      t >= lyrics[currentLyric + 1].time
-    ) {
+    if (currentLyric + 1 < lyrics.length && t >= lyrics[currentLyric + 1].time) {
       currentLyric++;
       typeLyric(lyrics[currentLyric]);
     }
@@ -226,7 +199,7 @@ function startLyrics() {
 }
 
 function typeLyric(line) {
-  const el = line.side === "left" ? lyricLeft : lyricRight;
+  const el = line.position === "top" ? lyricTop : lyricBottom;
   el.textContent = "";
   let i = 0;
   const speed = (line.duration * 1000) / line.text.length;
